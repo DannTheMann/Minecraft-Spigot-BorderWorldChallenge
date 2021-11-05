@@ -1,4 +1,4 @@
-package org.john.is.gay;
+package com.dja.mc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
