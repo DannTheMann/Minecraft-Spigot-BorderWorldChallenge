@@ -26,9 +26,9 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class Main extends JavaPlugin{
 
-	private static final Material 	BORDER_MATERIAL = Material.GLASS;
+	private static final Material 	BORDER_MATERIAL = Material.CYAN_STAINED_GLASS;
 	private static final BlockData 	BORDER_BLOCK = BORDER_MATERIAL.createBlockData();
-	private static final int 		GLASS_BORDER = 3;
+	private static final int 		GLASS_BORDER = 2;
 	private static final Material[] BLOCKS_TO_CONSUME = 
 		{
 		 Material.AIR, 
@@ -45,10 +45,11 @@ public class Main extends JavaPlugin{
 		};
 	
 	private static final String 	PLUGIN_NAME = "[WORLD_BORDER_PLUGIN]";
-	private static final int 		BORDER_RADIUS = 8;	// 8 = Chunk
+	private static final int 		BORDER_RADIUS = 10;	// 8 = Chunk
 	
 	private static final HashMap<UUID, WorldBorderPlayer> playerMap = new HashMap<>();
 	
+	private static Location spawn;
 	private static Main p;
 	private static int northX = 0;
 	private static int southX = 0;
@@ -62,11 +63,11 @@ public class Main extends JavaPlugin{
 		
 		p = this;
 		
-		final Location loc = Bukkit.getWorld("world").getSpawnLocation();
-		Main.northX = Math.abs(loc.getBlockX())+Main.BORDER_RADIUS;
-		Main.northZ = Math.abs(loc.getBlockZ())+Main.BORDER_RADIUS;
-		Main.southX = Math.abs(loc.getBlockX())-Main.BORDER_RADIUS;
-		Main.southZ = Math.abs(loc.getBlockZ())-Main.BORDER_RADIUS;
+		spawn = Bukkit.getWorld("world").getSpawnLocation();
+		Main.northX = Math.abs(spawn.getBlockX())+Main.BORDER_RADIUS;
+		Main.northZ = Math.abs(spawn.getBlockZ())+Main.BORDER_RADIUS;
+		Main.southX = Math.abs(spawn.getBlockX())-Main.BORDER_RADIUS;
+		Main.southZ = Math.abs(spawn.getBlockZ())-Main.BORDER_RADIUS;
 		
 		Bukkit.getOnlinePlayers().forEach((p)->{
 				Main.playerMap.put(p.getUniqueId(), new WorldBorderPlayer(p));
@@ -95,7 +96,7 @@ public class Main extends JavaPlugin{
 	
 	private class WorldBorderPlayer
 	{
-		private static final int TASK_MAX_INCREMENTS = 10;
+		private static final int TASK_MAX_INCREMENTS = 5;
 		private final List<Block> blocks;
 		private final Player player;
 		private BukkitTask task;
@@ -146,7 +147,18 @@ public class Main extends JavaPlugin{
 				    	double toTake = 20 / TASK_MAX_INCREMENTS;
 				    	double health = toTake * taskIncrements;
 
-				    	if(health < player.getHealth()) player.damage(toTake);
+				    	if(health < player.getHealth())
+			    		{
+				    		if(player.getHealth() <= toTake)
+				    		{
+				    			player.damage(player.getHealth()-1);
+				    			player.setHealth(2);
+				    		}
+				    		else
+				    		{
+				    			player.damage(toTake);
+				    		}
+			    		}
 				    	
 			    	}
 					
@@ -197,7 +209,8 @@ public class Main extends JavaPlugin{
 								
 				if(Main.invalidLocation(b.getLocation()))
 				{
-					e.setCancelled(true);
+					if(b.getLocation().distance(spawn) > (Main.BORDER_RADIUS+2))
+						e.setCancelled(true);
 				}
 			}
 		}
