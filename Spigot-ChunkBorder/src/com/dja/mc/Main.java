@@ -28,7 +28,7 @@ public class Main extends JavaPlugin{
 
 	private static final Material 	BORDER_MATERIAL = Material.CYAN_STAINED_GLASS;
 	private static final BlockData 	BORDER_BLOCK = BORDER_MATERIAL.createBlockData();
-	private static final int 		GLASS_BORDER = 2;
+	private static final int 		GLASS_BORDER = 3;
 	private static final Material[] BLOCKS_TO_CONSUME = 
 		{
 		 Material.AIR, 
@@ -80,6 +80,7 @@ public class Main extends JavaPlugin{
 	@Override
 	public void onDisable()
 	{
+		Main.playerMap.values().forEach((p)->{p.clean(true);});
 		System.out.println(Main.PLUGIN_NAME + " has disabled!");
 	}
 	
@@ -114,14 +115,19 @@ public class Main extends JavaPlugin{
 			this.blocks.add(b);
 		}
 		
-		public void clean()
+		public void clean(boolean clearAll)
 		{
 			this.blocks.removeIf((blk)->
 			{
-				boolean res = player.getLocation().distance(blk.getLocation()) >= 5;
+				boolean res = clearAll || player.getLocation().distance(blk.getLocation()) >= 5;
 				if(res) player.sendBlockChange(blk.getLocation(), blk.getBlockData());
 				return res;
 			});
+		}
+		
+		public void clean()
+		{
+			this.clean(false);
 		}
 		
 		public void startTask()
@@ -209,7 +215,7 @@ public class Main extends JavaPlugin{
 								
 				if(Main.invalidLocation(b.getLocation()))
 				{
-					if(b.getLocation().distance(spawn) > (Main.BORDER_RADIUS+2))
+					if(b.getLocation().distance(spawn) > (Main.BORDER_RADIUS*2))
 						e.setCancelled(true);
 				}
 			}
@@ -259,7 +265,7 @@ public class Main extends JavaPlugin{
 			}
 			
 			
-			for(int x = l.getBlockX()-Main.GLASS_BORDER+1; x < l.getBlockX()+Main.GLASS_BORDER-1; x++)
+			for(int x = l.getBlockX()-Main.GLASS_BORDER-2; x < l.getBlockX()+Main.GLASS_BORDER+2; x++)
 			{
 				for(int y = l.getBlockY()-Main.GLASS_BORDER-3; y < l.getBlockY()+(Main.GLASS_BORDER+3); y++)
 				{
